@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf8">
+<style>
+/*! 外边框通过CSS设置样式 */
+#generatedqrcode {
+    flex: auto;
+    padding: 5% 5% 5% 5%;
+    max-width: 256;
+    max-height: 256;
+}
+</style>
+</head>
+<body>
+    <h2>Enter URL/Text: </h2>
+
+
+    <form id="qrform" action="" method="">
+        <input type="text" id="QRURL" placeholder="URL" class="" onkeydown="">
+        <input type="button" id="qrbtn" value="Submit">
+    </form>
+    <!--
+    <p id="display">-</p> 
+    -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/555chy/qrcodejs/qrcode.js"></script>
+    <script>
+        window.onload=()=>{
+
+            // I do not fully understand how or why this works but this is the only 
+            // setup where the input box does not evaluate on every keydown 
+            // and only evaluates on enter press and submit button click
+            // otherwise the pressing enter key refreshes the page and all form data is lost
+            
+            // There are 5 monkey pathches total, 2 being inside another
+
+            //return a promise that resolves with a File instance
+            function urltoFile(url, filename, mimeType){
+                mimeType = mimeType || (url.match(/^data:([^;]+);/)||'')[1];
+                return (fetch(url)
+                    .then(function(res){return res.arrayBuffer();})
+                    .then(function(buf){return new File([buf], filename, {type:mimeType});})
+                    .then(function(File){
+                        const url = URL.createObjectURL(File);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = filename + "." + mimeType.split("/")[1].split("+")[0];
+                        link.click();
+                        URL.revokeObjectURL(url);
+                    })
+                    .then()
+                );
+            }
+
+            var form = document.getElementById("qrform");
+            function handleForm(event) { 
+                event.preventDefault(); 
+                getQRURL(); 
+            } 
+            form.addEventListener('submit', handleForm);
+
+            // Do not touch any of this!!!!
+
+            var qrcode;
+            function getQRURL() {
+                let url = document.getElementById("QRURL").value;
+                //document.getElementById("display").innerHTML = url;
+                var rqdiv = document.getElementById('generatedqrcode').innerHTML = "";
+
+                // Max 1024 bytes
+                qrcode = new QRCode(document.getElementById('generatedqrcode'), url);
+                return;           
+            }
+
+            function QRFile() {
+                var option = document.getElementById("frmtopt").value;
+                //document.getElementById("display").innerHTML = option;
+                if (option == "png" || option == "jpeg") {
+                    qrcode.makeImage = function () {
+
+                        if (typeof this._oDrawing.makeImage == "function" && (!this._android || this._android >= 3)) {                            
+                            this._oDrawing.makeImage();
+                        }
+                        var mime = "image/" + this.mimeType;
+                        this.img = this._oDrawing._elCanvas.toDataURL(mime, (this.mimeType == "jpeg") ? 1 : null);                        
+                    }
+                    qrcode.redraw = function (mimeType) {
+                        //this.clear();
+                        //this._htOption.curtainBgColor = "grey";
+                        //this._htOption.qrcodeOffsetX = Math.floor(this._htOption.width / 5);
+                        //this._htOption.qrcodeOffsetY = Math.floor(this._htOption.height / 5);
+                        this.mimeType = mimeType;
+                        if (this._htOption.text) {
+                            this._oDrawing.draw = function (oQRCode) {
+                                var nCount = oQRCode.getModuleCount();
+                                this._el.innerHTML = "";
+                                this._elCanvas = document.createElement("canvas");
+                                this.bordersize = Math.round((this._htOption.width/nCount) * 2);
+                                this._elCanvas.width = this._htOption.curtainWidth ? Math.floor(this._htOption.curtainWidth + this.bordersize) : Math.floor(this._htOption.width + this.bordersize);
+                                this._elCanvas.height = this._htOption.curtainHeight ? Math.floor(this._htOption.curtainHeight + this.bordersize) : Math.floor(this._htOption.height + this.bordersize);
+                                this._el.appendChild(this._elCanvas);
+                                this._oContext = this._elCanvas.getContext("2d");
+                                
+                                //目前真正被调用的是该draw方法
+                                var _elImage = this._elImage;
+                                var _oContext = this._oContext;
+                                var _htOption = this._htOption;
+                                
+                                var nWidth = _htOption.width / nCount;
+                                var nHeight = _htOption.height / nCount;
+                                var nRoundedWidth = Math.round(nWidth);
+                                var nRoundedHeight = Math.round(nHeight);
+
+                                _elImage.style.display = "none";
+                                this.clear();
+                                
+                                for (var row = 0; row < nCount + 2; row++) {
+                                    for (var col = 0; col < nCount + 2; col++) {
+                                        var isborder = ((row == 0) || (row == (nCount + 1)) || (col == 0) || (col == (nCount + 1)));
+                                        
+                                        var bIsDark;
+                                        if (isborder) {
+                                            bIsDark = false;
+                                            //console.log("border", row, col);
+                                        } else { 
+                                            //console.log("qr", row, col);
+                                            //console.log("qr trans", row - 1, col - 1);
+                                            bIsDark = oQRCode.isDark(row - 1, col - 1);
+                                        }
+                                        var nLeft = col * nWidth;
+                                        var nTop = row * nHeight;
+                                        _oContext.strokeStyle = bIsDark ? _htOption.colorDark : _htOption.colorLight;
+                                        _oContext.lineWidth = 1;
+                                        _oContext.fillStyle = bIsDark ? _htOption.colorDark : _htOption.colorLight;					
+                                        _oContext.fillRect(nLeft, nTop, nWidth, nHeight);
+                                        
+                                        // 안티 앨리어싱 방지 처리
+                                        _oContext.strokeRect(
+                                            Math.floor(nLeft) + 0.5,
+                                            Math.floor(nTop) + 0.5,
+                                            nRoundedWidth,
+                                            nRoundedHeight
+                                        );
+                                        
+                                        _oContext.strokeRect(
+                                            Math.ceil(nLeft) - 0.5,
+                                            Math.ceil(nTop) - 0.5,
+                                            nRoundedWidth,
+                                            nRoundedHeight
+                                        );
+                                    }
+                                }
+                                
+                                this._bIsPainted = true;
+                            }
+                            this.makeCode(this._htOption.text);	
+                        }
+                    }
+                    qrcode.redraw(option);
+                } 
+                else if (option == "svg") {
+                    qrcode._htOption.useSVG = true;
+                    //qrcode._htOption.colorLight = "#F2F0EF";
+                    
+                    qrcode.getSVG = function () {
+                        this._htOption.useSVG = true;
+                        svgqr = new QRCode(this._el, this._htOption);
+                        svgqr._oDrawing.draw = function (oQRCode) {
+                            var _htOption = this._htOption;
+                            var _el = this._el;
+                            var nCount = oQRCode.getModuleCount();
+                            var nWidth = Math.floor(_htOption.width / nCount);
+                            var nHeight = Math.floor(_htOption.height / nCount);
+
+                            this.clear();
+                            bordersize = Math.round((_htOption.width/nCount));
+
+                            function makeSVG(tag, attrs) {
+                                var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+                                for (var k in attrs)
+                                    if (attrs.hasOwnProperty(k)) el.setAttribute(k, attrs[k]);
+                                return el;
+                            }
+
+                            var svg = makeSVG("svg" , {'viewBox': '0 0 ' + String(nCount + 2) + " " + String(nCount + 2), 'width': String(_htOption.width + bordersize), 'height': String(_htOption.height + bordersize), 'fill': _htOption.colorLight});
+                            svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
+                            _el.appendChild(svg);
+
+                            svg.appendChild(makeSVG("rect", {"fill": _htOption.colorLight, "width": "100%", "height": "100%"}));
+                            svg.appendChild(makeSVG("rect", {"fill": _htOption.colorDark, "width": "1", "height": "1", "id": "templatedark"}));
+                            svg.appendChild(makeSVG("rect", {"fill": _htOption.colorLight, "width": "1", "height": "1", "id": "templatelight"}));
+                            
+                            for (var row = 0; row < nCount + 2; row++) {
+                                for (var col = 0; col < nCount + 2; col++) {
+                                    if ((row == 0) || (row == (nCount + 1)) || (col == 0) || (col == (nCount + 1))) {
+                                        //console.log("lightbox", row, col);
+                                        var child = makeSVG("use", {"x": String(col), "y": String(row)});
+                                        child.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#templatelight")
+                                        svg.appendChild(child);
+                                    }
+                                    else if (oQRCode.isDark(row - 1, col - 1)) {
+                                        //console.log("darkbox", row, col);
+                                        var child = makeSVG("use", {"x": String(col), "y": String(row)});
+                                        child.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#templatedark")
+                                        svg.appendChild(child);
+                                    }
+                                    
+                                }
+                            }
+                        }
+                        
+                        svgqr.makeImage = function () {
+                            this._oDrawing.draw(this._oQRCode);
+                            // Need to use setAttribute insteaf of setAttributeNS
+                            //this._oDrawing._el.children[0].setAttribute("height", String(this._htOption.height + this.bordersize));
+                            //this._oDrawing._el.children[0].setAttribute("width", String(this._htOption.width + this.bordersize));
+                            //console.log(this._oDrawing._el.children[0]);
+                            serialxml = new XMLSerializer().serializeToString(this._oDrawing._el.children[0]);
+                            this.img = "data:image/svg+xml;base64," + window.btoa(serialxml);
+                            
+                        }
+
+                        svgqr.makeImage();
+                        this.img = svgqr.img;
+                    }
+                    qrcode.getSVG();
+
+                }
+                //console.log(qrcode.img);
+                return;
+            }
+            
+            function DLQR(event){
+                if ( event.type == "onChange" || event.type == "input") {
+                    QRFile();
+                } 
+                if (qrcode.img == undefined) {
+                    QRFile();
+                }
+                
+                if (event.type == "submit") {
+                    event.preventDefault();
+                    urltoFile(qrcode.img, qrcode._htOption.text);
+                    qrcode.img = undefined;
+                }
+                return;
+            }
+
+            document.getElementById("qrbtn").addEventListener("click", getQRURL);
+            document.getElementById("QRURL").addEventListener("submit", getQRURL);
+            document.getElementById("QRURL").addEventListener("keypress", null);
+            document.getElementById("dlform").addEventListener("submit", DLQR);
+            document.getElementById("frmtopt").addEventListener("onChange", DLQR);
+        }
+    </script>
+
+    <div id="generatedqrcode"></div>
+
+    <label for="frmtopt">Choose a format:</label>
+    <select id="frmtopt" name="format">
+        <option value="png" selected="selected">PNG (Recommended)</option>
+        <option value="svg">SVG (Vector)</option>
+        <option value="jpeg">JPEG</option>
+    </select>
+
+    <form id="dlform" action="">
+        <button type="submit" id="dlbtn">Download!!</button>
+    </form>
+</body>
+</html>
