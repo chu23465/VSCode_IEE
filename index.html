@@ -228,7 +228,7 @@
 
         <!-- ===== input ig ===== -->
         <form id="qrform" action="" method="">
-            <input type="text" id="QRURL" placeholder="URL" class="" onkeydown="">
+            <input type="text" id="QRURL" placeholder="URL" class="" onkeydown="" value="Hello">
             <button type="button" id="qrbtn">GENERATE</button>    
         </form>
         <!-- ===== QR DISPLAY ===== -->
@@ -304,24 +304,14 @@
                     .then()
                 );
             }
-
-            var form = document.getElementById("qrform");
-            function handleForm(event) { 
-                event.preventDefault(); 
-                getQRURL(); 
-            } 
-            form.addEventListener('submit', handleForm);
-
-            // Do not touch any of this!!!!              (exept me)
-
-            var qrcode;
+            
             function getQRURL() {
+
                 let url = document.getElementById("QRURL").value;
                 //document.getElementById("display").innerHTML = url;
-                var rqdiv = document.getElementById('generatedqrcode').innerHTML = "";
-
                 // Max 1024 bytes
-                qrcode = new QRCode(document.getElementById('generatedqrcode'), url);
+                qrcode._htOption.text = url;
+                QRFile();
                 return;           
             }
 
@@ -409,11 +399,13 @@
                             this.makeCode(this._htOption.text);	
                         }
                     }
+                    
                     qrcode.redraw(option);
+
+                    
+                    
                 } 
                 else if (option == "svg") {
-                    qrcode._htOption.useSVG = true;
-                    //qrcode._htOption.colorLight = "#F2F0EF";
                     
                     qrcode.getSVG = function () {
                         this._htOption.useSVG = true;
@@ -476,7 +468,12 @@
                         svgqr.makeImage();
                         this.img = svgqr.img;
                     }
+                    //qrcode._htOption.colorLight = "#F2F0EF";
+                    qrcode._htOption.useSVG = true;
+
                     qrcode.getSVG();
+                    
+                    
 
                 }
                 //console.log(qrcode.img);
@@ -498,6 +495,23 @@
                 }
                 return;
             }
+
+            var form = document.getElementById("qrform");
+            function handleForm(event) { 
+                event.preventDefault(); 
+                getQRURL(); 
+            } 
+            form.addEventListener('submit', handleForm);
+
+            // Do not touch any of this!!!!              (exept me)
+
+            var count = 0;
+            if (count == 0) {
+                var qrcode = new QRCode(document.getElementById('generatedqrcode'), "Hello");
+                QRFile();
+                count = 1;
+            }
+            
 
             document.getElementById("qrbtn").addEventListener("click", getQRURL);
             document.getElementById("QRURL").addEventListener("submit", getQRURL);
