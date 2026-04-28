@@ -91,7 +91,8 @@
         .theme-toggle-container {
             position: absolute;
             top: 1.5rem;
-            right: 0.5;
+            right: 1.5rem;
+            padding: 0.75rem;
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -235,8 +236,9 @@
 
        <!-- ===== TOGGLEINATOR INATOR ===== -->
     <div class="theme-toggle-container">
-        <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark/light mode">◐</button>
         <span class="theme-label" id="themeLabel">DARK</span>
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark/light mode">◐</button>
+        
     </div>
 
         <!-- ===== FORMAT & DOWNbotton ===== -->
@@ -252,7 +254,7 @@
             <button type="submit" id="dlbtn">⬇ DOWNLOAD</button>
         </form>
     </div>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/555chy/qrcodejs/qrcode.js">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/555chy/qrcodejs/qrcode.js"></script>
     <script>
         // ===== CHECK IF LIB ok =====
         if (typeof QRCode === 'undefined') {alert('QR Code library failed to load. Please refresh the page.');}
@@ -444,7 +446,7 @@
                             for (var row = 0; row < nCount + 2; row++) {
                                 for (var col = 0; col < nCount + 2; col++) {
                                     if ((row == 0) || (row == (nCount + 1)) || (col == 0) || (col == (nCount + 1))) {
-                                        //console.log("lightbox", row, col);
+                                     //console.log("lightbox", row, col);
                                         var child = makeSVG("use", {"x": String(col), "y": String(row)});
                                         child.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#templatelight")
                                         svg.appendChild(child);
