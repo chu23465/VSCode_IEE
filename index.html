@@ -91,7 +91,7 @@
         .theme-toggle-container {
             position: absolute;
             top: 1.5rem;
-            right: 1.5rem;
+            right: 0;
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -219,11 +219,6 @@
     </style>
 </head>
 <body>
-    <!-- ===== TOGGLEINATOR INATOR ===== -->
-    <div class="theme-toggle-container">
-        <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark/light mode">◐</button>
-        <span class="theme-label" id="themeLabel">DARK</span>
-    </div>
 
     <!-- ===== MAIN heading box ===== -->
     <div class="container">
@@ -237,6 +232,12 @@
         </form>
         <!-- ===== QR DISPLAY ===== -->
         <div id="generatedqrcode"></div>
+
+       <!-- ===== TOGGLEINATOR INATOR ===== -->
+    <div class="theme-toggle-container">
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark/light mode">◐</button>
+        <span class="theme-label" id="themeLabel">DARK</span>
+    </div>
 
         <!-- ===== FORMAT & DOWNbotton ===== -->
         <h2>Format & Download</h2>
